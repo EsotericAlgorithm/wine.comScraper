@@ -1,7 +1,12 @@
 import scrapy
 from scrapy.utils.sitemap import Sitemap
 from scrapy.http import Request, XmlResponse
+from scrapy.loader import ItemLoader
+from scrapy.loader.processors import TakeFirst
+from winecom.items import WinecomItem
+import datetime
 import re
+
 
 class WineSpider(scrapy.spiders.SitemapSpider):
     name = 'wine.com'
@@ -10,7 +15,24 @@ class WineSpider(scrapy.spiders.SitemapSpider):
     sitemap_alternate_links = True
 
     def parse_wine(self, response):
-        print(response.title)
+        self.logger.info("Loading item...")
+        l = ItemLoader(item=WinecomItem(), response=response)
+        l.default_output_processor = TakeFirst()
+
+        l.add_xpath('image', '//section[1]//img')
+        l.add_xpath('style', '/html/body/main/section[2]/ul[1]/li[2]/text()')
+        l.add_xpath('price', '/html/body/main/section[2]/div[1]/div[1]/div/span/text()/text()')
+        l.add_xpath('item_number', '/html/body/main/section[2]/aside/div/text()')
+        l.add_xpath('description', '/html/body/main/section[3]/ul[2]/li[1]/section[1]/p/text()')
+        l.add_xpath('winery', '/html/body/main/section[3]/ul[2]/li[2]/h3/text()')
+        l.add_xpath('winery_location', '/html/body/main/section[3]/ul[2]/li[2]/article/figure/@data-map-geo')
+        l.add_css('abv', 'body > main > section.productAbstract > ul.product-icons > li.abv::text')
+        l.add_xpath('name', '/html/body/main/section[2]/h1/text()')
+        l.add_xpath('subname', '/html/body/main/section[2]/h2/text()')
+        l.add_xpath('collectible', '/html/body/main/section[2]/ul[1]/li[4]//text()')
+        l.add_css('pro_reviews', 'Section.criticalAcclaim > ul > li.wineRating')
+        l.add_value('updated', str(datetime.datetime.now()))
+        return l.load_item()
     
     def parse(self, response):
         pass

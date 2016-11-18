@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 
 # Define here the models for your scraped items
 #
@@ -9,6 +9,18 @@ import scrapy
 
 
 class WinecomItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    image = scrapy.Field()
+    style = scrapy.Field()
+    price = scrapy.Field()
+    item_number = scrapy.Field()
+    description = scrapy.Field()
+    winery = scrapy.Field()
+    winery_location = scrapy.Field()
+    abv = scrapy.Field()
+    name = scrapy.Field()
+    subname = scrapy.Field()
+    collectible = scrapy.Field()
+    pro_reviews = scrapy.Field()
+    cust_reviews = scrapy.Field()
+    vintage = scrapy.Field()
+    updated = scrapy.Field()
