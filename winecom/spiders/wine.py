@@ -38,7 +38,8 @@ class WineSpider(scrapy.spiders.SitemapSpider):
         pass
 
     def _parse_sitemap(self, response):
-        self.logger.info("Custom sitemap parsing function initiating")
+        # Wine.com sitemap does not follow standard (url in loc)
+        # rewrote parse to pull url from loc
         if response.url.endswith('/robots.txt'):
             for url in sitemap_urls_from_robots(response.text):
                 yield Request(url, callback=self._parse_sitemap)
