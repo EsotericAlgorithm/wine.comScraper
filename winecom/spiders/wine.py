@@ -19,7 +19,7 @@ class WineSpider(scrapy.spiders.SitemapSpider):
         l = ItemLoader(item=WinecomItem(), response=response)
         l.default_output_processor = TakeFirst()
 
-        l.add_xpath('image', '//section[1]//img')
+        l.add_xpath('image', '//section[1]//img/@src')
         l.add_xpath('style', '/html/body/main/section[2]/ul[1]/li[2]/text()')
         l.add_xpath('price', '/html/body/main/section[2]/div[1]/div[1]/div/span/text()/text()')
         l.add_xpath('item_number', '/html/body/main/section[2]/aside/div/text()')
