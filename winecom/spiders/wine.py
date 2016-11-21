@@ -3,6 +3,7 @@ from scrapy.utils.sitemap import Sitemap
 from scrapy.http import Request, XmlResponse
 from scrapy.loader import ItemLoader
 from scrapy.loader.processors import TakeFirst
+from scrapy.selector import Selector
 from winecom.items import WinecomItem
 import datetime
 import re
@@ -17,12 +18,17 @@ class WineSpider(scrapy.spiders.SitemapSpider):
     def parse_wine(self, response):
         self.logger.info("Loading item...")
         l = ItemLoader(item=WinecomItem(), response=response)
+        sel = Selector(response)
         l.default_output_processor = TakeFirst()
 
         l.add_xpath('image', '//section[1]//img/@src')
         l.add_xpath('style', '/html/body/main/section[2]/ul[1]/li[2]/text()')
         l.add_xpath('price', '/html/body/main/section[2]/div[1]/div[1]/div/span/text()/text()')
-        l.add_xpath('item_number', '/html/body/main/section[2]/aside/div/text()')
+
+        # extract item number
+        item_number = sel.xpath('/html/body/main/section[2]/aside/div/text()').re_first('\d+')
+        l.add_value('item_number', item_number)
+
         l.add_xpath('description', '/html/body/main/section[3]/ul[2]/li[1]/section[1]/p/text()')
         l.add_xpath('winery', '/html/body/main/section[3]/ul[2]/li[2]/h3/text()')
         l.add_xpath('winery_location', '/html/body/main/section[3]/ul[2]/li[2]/article/figure/@data-map-geo')
