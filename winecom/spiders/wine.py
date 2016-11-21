@@ -61,9 +61,28 @@ class WineSpider(scrapy.spiders.SitemapSpider):
         dicts = []
         for review in reviews:
             dicts.append(dict(zip(keys,review)))
-
-
         l.add_value('pro_reviews', dicts)
+
+        # Extract customer reviews
+        # include rating, rating text (if present), date, location, and username
+        cust_rev_sel = sel.css('.topReviews > article')
+        def extract_custinfo(cust_record):
+            elements = ['.reviewText', '.starRatingText', '.reviewDate',\
+                    '.reviewAuthorAlias', '.reviewAuthorLocation']
+            keys = ['review_text', 'rating', 'date', 'author', 'author_location']
+            extracted_elements = [cust_record.css(element +'::text').extract_first()\
+                    for element in elements]
+            # Clean up whitespacing
+            extracted_elements = list(map(lambda x: x.strip(), extracted_elements))
+            # if there is no author text don't include it
+            if extracted_elements[0] == '':
+                extracted_elements = extracted_elements[1:]
+                keys = keys[1:]
+
+            return dict(zip(keys, extracted_elements))
+        cust_reviews = [extract_custinfo(record) for record in cust_rev_sel]
+        l.add_value('cust_reviews', cust_reviews)
+
 
         l.add_value('updated', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         return l.load_item()
