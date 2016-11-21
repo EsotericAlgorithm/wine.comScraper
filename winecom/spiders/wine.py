@@ -16,6 +16,7 @@ class WineSpider(scrapy.spiders.SitemapSpider):
     sitemap_alternate_links = True
 
     def parse_wine(self, response):
+        if 'detail' not in response.url.lower(): return
         l = ItemLoader(item=WinecomItem(), response=response)
         sel = Selector(response)
 
@@ -113,9 +114,8 @@ class WineSpider(scrapy.spiders.SitemapSpider):
                     yield Request(loc, callback=self._parse_sitemap)
             elif s.type == 'urlset':
                 for loc in re.findall(loc_reg, body.decode('utf-8')):
-                    if 'detail' in response.url.lower():
-                        yield Request(loc, callback=self.parse_wine)
-        
+                    yield Request(loc, callback=self.parse_wine)
+       
 def iter(it, search):
     for d in it:
         yield d[search]
