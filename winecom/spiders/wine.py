@@ -40,7 +40,14 @@ class WineSpider(scrapy.spiders.SitemapSpider):
 
 
         l.add_value('item_number', item_number)
-        l.add_xpath('name', '/html/body/main/section[2]/h1/text()')
+
+        # extract name and vintage 
+        name = sel.xpath('/html/body/main/section[2]/h1/text()').extract()
+        l.add_value('name', name)
+        vintage = re.findall('[12]{1}\d{3}', str(name))
+        l.add_value('vintage', vintage)
+
+
         l.add_xpath('subname', '/html/body/main/section[2]/h2/text()')
         l.add_xpath('collectible', '/html/body/main/section[2]/ul[1]/li[4]//text()')
         l.add_css('pro_reviews', 'Section.criticalAcclaim > ul > li.wineRating')

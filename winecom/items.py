@@ -23,5 +23,5 @@ class WinecomItem(scrapy.Item):
     collectible = scrapy.Field(output_processor=TakeFirst())
     pro_reviews = scrapy.Field()
     cust_reviews = scrapy.Field()
-    vintage = scrapy.Field()
-    updated = scrapy.Field()
+    vintage = scrapy.Field(output_processor=TakeFirst())
+    updated = scrapy.Field(output_processor=TakeFirst())
