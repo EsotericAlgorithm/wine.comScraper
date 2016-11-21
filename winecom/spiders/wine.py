@@ -19,7 +19,6 @@ class WineSpider(scrapy.spiders.SitemapSpider):
         self.logger.info("Loading item...")
         l = ItemLoader(item=WinecomItem(), response=response)
         sel = Selector(response)
-        l.default_output_processor = TakeFirst()
 
         l.add_xpath('image', '//section[1]//img/@src')
         l.add_xpath('style', '/html/body/main/section[2]/ul[1]/li[2]/text()')
@@ -32,7 +31,15 @@ class WineSpider(scrapy.spiders.SitemapSpider):
         l.add_xpath('description', '/html/body/main/section[3]/ul[2]/li[1]/section[1]/p/text()')
         l.add_xpath('winery', '/html/body/main/section[3]/ul[2]/li[2]/h3/text()')
         l.add_xpath('winery_location', '/html/body/main/section[3]/ul[2]/li[2]/article/figure/@data-map-geo')
+
+        # extract item number
         l.add_css('abv', 'body > main > section.productAbstract > ul.product-icons > li.abv::text')
+        abv  = sel.css('body > main > section.productAbstract > ul.product-icons > li.abv::text')
+        abv = abv.re_first('\d+(\.\d{1,2})?')
+        l.add_value('abv', abv)
+
+
+        l.add_value('item_number', item_number)
         l.add_xpath('name', '/html/body/main/section[2]/h1/text()')
         l.add_xpath('subname', '/html/body/main/section[2]/h2/text()')
         l.add_xpath('collectible', '/html/body/main/section[2]/ul[1]/li[4]//text()')
