@@ -16,12 +16,12 @@ class WineSpider(scrapy.spiders.SitemapSpider):
     sitemap_alternate_links = True
 
     def parse_wine(self, response):
-        self.logger.info("Loading item...")
         l = ItemLoader(item=WinecomItem(), response=response)
         sel = Selector(response)
 
         l.add_xpath('image', '//section[1]//img/@src')
-        l.add_xpath('style', '/html/body/main/section[2]/ul[1]/li[2]/text()')
+        #l.add_xpath('style', '/html/body/main/section[2]/ul[1]/li[2]/text()')
+        l.add_css('style', 'section .wine-style::text')
         l.add_xpath('price', '/html/body/main/section[2]/div[1]/div[1]/div/span/text()/text()')
 
         # extract item number
@@ -46,7 +46,9 @@ class WineSpider(scrapy.spiders.SitemapSpider):
         l.add_value('vintage', vintage)
 
 
-        l.add_xpath('subname', '/html/body/main/section[2]/h2/text()')
+        subname = sel.xpath('/html/body/main/section[2]/h2/text()').extract_first().strip()
+        #l.add_xpath('subname', '/html/body/main/section[2]/h2/text()')
+        l.add_value('subname', subname)
         l.add_xpath('collectible', '/html/body/main/section[2]/ul[1]/li[4]//text()')
         # extract all proreview elements (reviewer, ratingProvider, reviewText, ratingScore)
         keys = ['reviewer', 'rating_provider', 'score', 'rating_text']
@@ -111,7 +113,8 @@ class WineSpider(scrapy.spiders.SitemapSpider):
                     yield Request(loc, callback=self._parse_sitemap)
             elif s.type == 'urlset':
                 for loc in re.findall(loc_reg, body.decode('utf-8')):
-                    yield Request(loc, callback=self.parse_wine)
+                    if 'detail' in response.url.lower():
+                        yield Request(loc, callback=self.parse_wine)
         
 def iter(it, search):
     for d in it:
