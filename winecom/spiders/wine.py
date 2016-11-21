@@ -33,9 +33,7 @@ class WineSpider(scrapy.spiders.SitemapSpider):
         l.add_xpath('winery_location', '/html/body/main/section[3]/ul[2]/li[2]/article/figure/@data-map-geo')
 
         # extract item number
-        l.add_css('abv', 'body > main > section.productAbstract > ul.product-icons > li.abv::text')
-        abv  = sel.css('body > main > section.productAbstract > ul.product-icons > li.abv::text')
-        abv = abv.re_first('\d+(\.\d{1,2})?')
+        abv  = sel.css('body > main > section.productAbstract > ul.product-icons > li.abv::text').extract()
         l.add_value('abv', abv)
 
 
@@ -50,7 +48,23 @@ class WineSpider(scrapy.spiders.SitemapSpider):
 
         l.add_xpath('subname', '/html/body/main/section[2]/h2/text()')
         l.add_xpath('collectible', '/html/body/main/section[2]/ul[1]/li[4]//text()')
-        l.add_css('pro_reviews', 'Section.criticalAcclaim > ul > li.wineRating')
+        # extract all proreview elements (reviewer, ratingProvider, reviewText, ratingScore)
+        keys = ['reviewer', 'rating_provider', 'score', 'rating_text']
+
+        review_sel = sel.css('Section.criticalAcclaim > ul > li.wineRating')
+        reviewers = [elem.css('.reviewer::text').extract_first() for elem in review_sel]
+        rating_providers = [elem.css('.ratingProvider::text').extract_first()  for elem in review_sel]
+        rating_scores = [elem.css('.ratingScore::text').extract_first() for elem in review_sel]
+        review_texts = [elem.css('.reviewText::text').extract_first() for elem in review_sel]
+        reviews = zip(reviewers, rating_providers, rating_scores, review_texts)
+        # create dictionary of reviews for better json mapping
+        dicts = []
+        for review in reviews:
+            dicts.append(dict(zip(keys,review)))
+
+
+        l.add_value('pro_reviews', dicts)
+
         l.add_value('updated', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         return l.load_item()
     
