@@ -51,7 +51,7 @@ class WineSpider(scrapy.spiders.SitemapSpider):
         l.add_xpath('subname', '/html/body/main/section[2]/h2/text()')
         l.add_xpath('collectible', '/html/body/main/section[2]/ul[1]/li[4]//text()')
         l.add_css('pro_reviews', 'Section.criticalAcclaim > ul > li.wineRating')
-        l.add_value('updated', str(datetime.datetime.now()))
+        l.add_value('updated', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         return l.load_item()
     
     def parse(self, response):
